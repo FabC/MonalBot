@@ -1,0 +1,23 @@
+/* Default style for all elements */
+
+* {
+    font-family: Times,"sans-serif";
+}
+
+h1 {
+    font-family: "Linux Libertine",Georgia,Times,serifm;
+    font-weight: normal;
+    margin: 15px 0px 5px 0px;
+    border-bottom: 1px solid black;
+}
+
+table {
+	border:0;
+}
+
+.username {
+   font-weight: bold;
+}
+
+.error {color: #FF0000;}
+
