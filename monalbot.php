@@ -6,7 +6,7 @@
 <body>  
 
 
-<h1>Monitoraggio Allievi - MonAlBot, v0.4 (Beta version), FabC</h1>
+<h1>Monitoraggio Allievi - MonAlBot, v0.5 (Beta version), FabC</h1>
 <p><span class="error">* required field.</span></p>
 
 <form method="post" action="monalbot_wq.php">

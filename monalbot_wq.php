@@ -1,6 +1,6 @@
 <html>
  <head>
-	<title>MONALBOT, v0.4</title>
+	<title>MONALBOT, v0.5</title>
 	<link href="monalbot.css" rel="stylesheet" type="text/css">
 	<meta charset="utf-8" />
  </head>
@@ -27,17 +27,33 @@
 include 'get_user_list_from_wiki_page.php';
 
 
-// Default parameters and constants
+/*
+	Default parameters and constants
+	
+	$host		Valid Wikipedia host name, normally it dependes from your language
+	$listofusers	URL of a wiki page with user ID to query for. Users can be in any order, but
+			must be in the format [[Utente:ID]] or [[Utente:ID|Full user name]]
+
+			OR
+
+			List of users separated by "|"
+	$startdate	Initial date of the analysis
+*/
 
 $host = 'https://it.wikipedia.org';
 $listofusers = 'https://it.wikipedia.org/wiki/Utente:Giaccai/formazione/allievi';
 //$listofusers = 'FabC|Giaccai';
 $startdate = '2016-01-01T00:00:00Z';
 
-// Input parameters (default and formatting)
-
-if (count($_POST)==0)			// Get paramaters from command line
+/*
+===========================================================================
+	Get input parameters (set default, data formatting)
+===========================================================================
+*/
+if (count($_POST)==0)
 {
+	// No HTTP POST parameter, get command line parameters (useful to debug the module)
+
 	if ($argc>1)
 	{
 		$listofusers = $argv[1];
@@ -49,8 +65,10 @@ if (count($_POST)==0)			// Get paramaters from command line
 
 
 }
-else					// Parameters passed via the HTTP POST method
+else					
 {
+	// Parameters passed via the HTTP POST method
+
 	$listofusers = $_POST["listofusers"] ?: $listofusers;
 	$listofusers = rtrim($listofusers);
 	$listofusers = str_replace("\n","|",$listofusers);
@@ -65,14 +83,17 @@ else					// Parameters passed via the HTTP POST method
 if (filter_var($listofusers, FILTER_VALIDATE_URL) == TRUE)
 {
 	// Extract the page name
+
 	$pagenameafter = "wikipedia.org/wiki/";
 	$page_name = substr($listofusers, strpos($listofusers, $pagenameafter) + strlen($pagenameafter) );
 
-	echo "Fetching data from " . $page_name . "\n";
+	// echo "Fetching data from " . $page_name . "\n";
 
 	$v = get_users_list_from_URL($host, $page_name);
 
+
 	// Concatenate the list of users and use the "|" as separator
+
 	$listofusers = implode ("|", $v);
 }
 
@@ -81,12 +102,17 @@ if (filter_var($listofusers, FILTER_VALIDATE_URL) == TRUE)
 
 $opts = array('http' =>
   array(
-    'user_agent' => 'MonAlBot/0.4 (fabrizio.carrai@gmail.com)'
+    'user_agent' => 'MonAlBot/0.5 (fabrizio.carrai@gmail.com)'
   )
 );
 $context = stream_context_create($opts);
 
-// Get information about a list of users
+
+/*
+===========================================================================
+		Get users' information
+===========================================================================
+*/
 
 $usersinfo = [];
 $cont_key = "";
@@ -102,19 +128,56 @@ do
 } while ($cont_key<>"");
 
 
-echo "<h1>Monitoraggio Allievi - MonAlBot, v0.4 (Beta version), FabC</h1>";
+echo "<h1>Monitoraggio Allievi - MonAlBot, v0.5 (Beta version), FabC</h1>";
 echo "There are data for " . count($usersinfo) . " user(s):</p>";
 
 
-// Loop on each user
+?>
+<table border="0">
+<?php
+
+$i=0;
+foreach ($usersinfo as $user)
+{
+	if ($i==0)
+		echo "<tr>";
+		
+	echo "<td width='10%'><a href='#" . $user["name"] .  "'><span class='userindex'>" . $user["name"] . "</span></a></td>";
+	$i++;
+
+	if ($i>=10)
+	{
+		echo "</tr>";
+		$i=0;
+	}
+}
+
+if ($i!=0)
+	echo "</tr>";
+?>
+</table>
+</p>
+<?php
+
+
+/*
+===========================================================================
+		Scan the users list
+===========================================================================
+*/
 
 foreach ($usersinfo as $user)
 {
+	echo "</p><h1>";
+	echo "<a name='" . $user["name"] . "'</a>";
 	echo "Name          : <span class='username'>" . $user["name"] . "</span></br>";
+	echo "</h1>";
+
 	echo "Registered on : " . $user["registration"] . "</br>";
 	echo "Total edits   : " . $user["editcount"] . " (including edits on user pages and other pages)</br>";
 
-	// Get user's contributes
+
+	// Get user's contributes to Wikipedia (ucnamespace = 0 , https://en.wikipedia.org/wiki/Wikipedia:Namespace)
 
 	$usercontrib = [];
 	$cont_key = "";
@@ -140,9 +203,44 @@ foreach ($usersinfo as $user)
 
 	} while ($cont_key<>"");
 
-	echo "Since " . $startdate. " the user has contributed on " . count($usercontrib) . " Wikipedia article(s):</p>";
+	echo "Since " . $startdate. " the user has contributed on " . count($usercontrib) . " Wikipedia article(s)";
 
+
+	// Get user edits (ucnamespace = 2 , https://en.wikipedia.org/wiki/Wikipedia:Namespace)
+
+
+	$userpagesedit = [];
+	$cont_key = "";
+	do
+	{
+		$user["name"] = str_replace(" ","_",$user["name"]);
+		$url = $host . '/w/api.php?action=query&format=json&list=usercontribs&uclimit=250&ucstart=' . $startdate . '&ucuser=' . $user["name"] . '&ucdir=newer&ucnamespace=2';
+		if ($cont_key<>"") $url = $url . '&uccontinue=' . $cont_key;
+
+		$response = file_get_contents($url, FALSE, $context);
+		$t = json_decode($response, TRUE);
+
+		// Test if the query could not report all the results in one call
+
+		if (isset($t["continue"]))
+		{
+			$cont_key = $t["continue"]["uccontinue"];
+		}
+		else
+			$cont_key = "";
+
+		$userpagesedit = array_merge($userpagesedit, $t["query"]["usercontribs"]);
+
+	} while ($cont_key<>"");
+
+	echo " and " . count($userpagesedit) . " user pages(s):</p>";
+
+	// *********************************************************************************************
+
+	// List the user contributes to Wikipedia
 ?>
+	<h3>Contributes to Wikipedia</h3>
+
 	<table border="1">
 		<tr>
 			<th>No.</th>
@@ -153,8 +251,6 @@ foreach ($usersinfo as $user)
 		</tr>
 
 <?php
-
-	// List the user contributes
 
 	for($i=0; $i<count($usercontrib); $i++)
 	{
@@ -172,7 +268,46 @@ foreach ($usersinfo as $user)
 ?>
 	</table></p>
 <?php
+
+	// List the user edits
+?>
+
+	<h3>User page edits</h3>
+
+	<table border="1">
+		<tr>
+			<th>No.</th>
+			<th style='width:20ch'>Date</th>
+			<th>Title</th>
+			<th>Comment</th>
+			<th>History</th>
+		</tr>
+
+<?php
+
+	for($i=0; $i<count($userpagesedit); $i++)
+	{
+		$wikipage=$userpagesedit[$i];
+		$linecount = $i+1;
+
+		echo "<tr>\n\n";
+		echo "<td>" . $linecount . "</td>";
+		echo "<td>" . $wikipage["timestamp"] . "</td>";
+		echo "<td>" . "<a href=\"" .$host . "/wiki/" . $wikipage["title"] .  "\" target=\"_blank\">" . $wikipage["title"] . "</a></td>";
+		echo "<td>" . htmlspecialchars($wikipage["comment"]) . "</td>";
+		echo "<td>" . "<a href=\"" .$host . "/w/index.php?title=" . $wikipage["title"] . "&action=history\">" . "History</a></td>";
+		echo "</tr>";
+	}
+?>
+	</table></p>
+
+
+<?php
 }
 ?>
- </body>
+    </p></p></hr><center>
+    MonalBot - Monitoraggio Allievi/Student monitoring tool for the Wikipedia community - FabC, 2016</br>
+	<img src="http://mirrors.creativecommons.org/presskit/buttons/88x31/png/by.png" alt="License CC-BY" height="20px"/>
+	</center>
+  </body>
 </html>
