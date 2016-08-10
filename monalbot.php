@@ -6,7 +6,7 @@
 <body>  
 
 
-<h1>Monitoraggio Allievi - MonAlBot, v0.5 (Beta version), FabC</h1>
+<h1>Monitoraggio Allievi/Student Monitoring Tool - MonAlBot, v1.0</h1>
 <p><span class="error">* required field.</span></p>
 
 <form method="post" action="monalbot_wq.php">
@@ -18,13 +18,19 @@
 	</tr>
 	<tr>
 		<td>Start date:</td>
-		<td><input type="text" name="startdate" value="" size="32"></td>
-		<td >Use the format yyyy-mm-ddThh:mm:ssZ, e.g. 2009-05-09T10:07:17Z
+		<td><input type="date" name="startdate" value="" size="32"></td>
+		<td>(default 1-1-2016)</td>
 	</tr>
 	</table>
 
 	<br/>
 	<input type="submit" name="submit" value="Submit">  
 </form>
+
+<p>
+<center>
+    MonalBot - Monitoraggio Allievi/Student monitoring tool for the Wikipedia community - FabC, 2016</br>
+    <img src="http://mirrors.creativecommons.org/presskit/buttons/88x31/png/by.png" alt="License CC-BY" height="20px">
+</center>
 </body>
 

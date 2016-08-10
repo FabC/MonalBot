@@ -1,6 +1,6 @@
 <html>
  <head>
-	<title>MONALBOT, v0.5</title>
+	<title>MONALBOT, v1.0</title>
 	<link href="monalbot.css" rel="stylesheet" type="text/css">
 	<meta charset="utf-8" />
  </head>
@@ -43,7 +43,7 @@ include 'get_user_list_from_wiki_page.php';
 $host = 'https://it.wikipedia.org';
 $listofusers = 'https://it.wikipedia.org/wiki/Utente:Giaccai/formazione/allievi';
 //$listofusers = 'FabC|Giaccai';
-$startdate = '2016-01-01T00:00:00Z';
+$startdate = '2016-01-01';
 
 /*
 ===========================================================================
@@ -74,8 +74,11 @@ else
 	$listofusers = str_replace("\n","|",$listofusers);
 	$listofusers = str_replace(" ","_",$listofusers);
 
-	$startdate   = $_POST["startdate"]   ?: $startdate;
+	$startdate   = $_POST["startdate"] ?: $startdate;
 }
+
+$startdate   .= "T00:00:00Z";	// Specify time  
+echo $startdate;
 
 // if the 'listofusers' is a valid URL then get the names from that page
 // the URL is expected to be similar to https://it.wikipedia.org/wiki/Utente:FabC
@@ -102,7 +105,7 @@ if (filter_var($listofusers, FILTER_VALIDATE_URL) == TRUE)
 
 $opts = array('http' =>
   array(
-    'user_agent' => 'MonAlBot/0.5 (fabrizio.carrai@gmail.com)'
+    'user_agent' => 'MonAlBot/1.0 (fabrizio.carrai@gmail.com)'
   )
 );
 $context = stream_context_create($opts);
@@ -128,7 +131,7 @@ do
 } while ($cont_key<>"");
 
 
-echo "<h1>Monitoraggio Allievi - MonAlBot, v0.5 (Beta version), FabC</h1>";
+echo "<h1>Monitoraggio Allievi/Student monitoring tool - MonAlBot, v1.0</h1>";
 echo "There are data for " . count($usersinfo) . " user(s):</p>";
 
 
