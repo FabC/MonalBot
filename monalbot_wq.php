@@ -30,7 +30,11 @@ include 'get_user_list_from_wiki_page.php';
 /*
 	Default parameters and constants
 	
-	$host		Valid Wikipedia host name, normally it dependes from your language
+	$host		Valid Wikipedia host name, normally it dependes from the language in use: e.g.
+			https://it.wikipedia.org, https://en.wikipedia.org, ...
+
+	$user_translation	Translation of the word "user" in the used wikipedia language.
+			
 	$listofusers	URL of a wiki page with user ID to query for. Users can be in any order, but
 			must be in the format [[Utente:ID]] or [[Utente:ID|Full user name]]
 
@@ -41,7 +45,9 @@ include 'get_user_list_from_wiki_page.php';
 */
 
 $host = 'https://it.wikipedia.org';
-$listofusers = 'https://it.wikipedia.org/wiki/Utente:Giaccai/formazione/allievi';
+$user_translation = "Utente";
+
+//$listofusers = 'https://it.wikipedia.org/wiki/Utente:Giaccai/formazione/allievi';
 //$listofusers = 'FabC|Giaccai';
 $startdate = '2016-01-01';
 
@@ -78,7 +84,6 @@ else
 }
 
 $startdate   .= "T00:00:00Z";	// Specify time  
-echo $startdate;
 
 // if the 'listofusers' is a valid URL then get the names from that page
 // the URL is expected to be similar to https://it.wikipedia.org/wiki/Utente:FabC
@@ -92,7 +97,7 @@ if (filter_var($listofusers, FILTER_VALIDATE_URL) == TRUE)
 
 	// echo "Fetching data from " . $page_name . "\n";
 
-	$v = get_users_list_from_URL($host, $page_name);
+	$v = get_users_list_from_URL($host, $user_translation, $page_name);
 
 
 	// Concatenate the list of users and use the "|" as separator

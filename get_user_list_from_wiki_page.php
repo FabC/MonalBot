@@ -17,7 +17,7 @@
 */
 
 
-function get_users_list_from_URL($host, $page_name)
+function get_users_list_from_URL($host, $user_translation, $page_name)
 {
 	// Specify the User-Agent header to identify the client
 
@@ -45,7 +45,7 @@ function get_users_list_from_URL($host, $page_name)
 	// - Found all the text starting with "[[Utente:", ignoring pattern case (?i)
 	// - Extract the text till the "]] pattern is found
 
-	preg_match_all ("/\[\[(?i)Utente:(.*?)\]\]/", $page_content, $users_found);
+	preg_match_all ("/\[\[(?i)" . $user_translation .":(.*?)\]\]/", $page_content, $users_found);
 
 	$users_list = [];
 
